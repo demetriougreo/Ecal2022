@@ -1,0 +1,158 @@
+import uproot
+import uproot3
+import numpy as np
+import pandas as pd
+import seaborn as sns
+from matplotlib import pyplot as plt
+import mplhep as hep
+from vpython import *
+from time import *
+import openpyxl
+import turtle
+from mpl_toolkits.mplot3d import Axes3D
+plt.style.use([hep.style.LHCb])
+
+running=True
+flag=False
+
+# Don't know really what is it, maybe just a test
+root_file =  'C:\\Users\\demet\\Desktop\\Internship\\18\\data_0000.root'
+Tname = 'board_57'
+# br_list_data = ['n_hits', 'tofpet_id', 'tofpet_channel', 'tac', 't_coarse', 't_fine', 'timestamp', 'v_coarse', 'v_fine', 'value', 'timestamp_cal_chi2', 'timestamp_cal_dof', 'value_cal_chi2', 'value_cal_dof', 'value_saturation']
+br_list_data = ['tofpet_channel', 'value']
+
+with uproot.open(root_file) as tree:
+    df_events = tree['event'].arrays(['timestamp'], library="pd")
+    print(tree[Tname].keys())
+
+br_list_data2 = ['n_hits', 'tofpet_id', 'tofpet_channel', 'tac', 't_coarse', 't_fine', 'timestamp', 'v_coarse', 'v_fine', 'value', 'timestamp_cal_chi2', 'timestamp_cal_dof', 'value_cal_chi2', 'value_cal_dof', 'value_saturation']
+
+with uproot.open(root_file) as tree:
+    dict_ecal = tree[Tname].arrays(br_list_data2, library="np")
+
+
+df = pd.DataFrame.from_dict(dict_ecal)
+df['id'] = range(1, len(df) + 1)
+
+df_events_tmp=[]
+for i in range(len(df)):
+    if df.iloc[i]['n_hits']>32:
+        df_events_tmp.append(df_events.iloc[i])
+df_events = pd.DataFrame(df_events_tmp)
+df = df.loc[df['n_hits'] > 30]
+
+
+filepath="C:\\Users\\demet\\Desktop\\Internship\\SiPM.xlsx"
+
+def same_layer(data,data2):
+    position=pd.read_excel(filepath)
+    channel=position['Channel']
+    TOFPET=position['TOFPET']
+    size=len(data)
+    data2_internal=data2%2
+    layer=np.zeros((size,),dtype=int)
+    for i in range(size):
+        layer[i]=position.loc[(channel== data[i]) & (TOFPET == data2_internal[i])]['Layer']
+        if data2[i] == 4 or data2[i] == 5 or data2[i] == 6 or data2[i] == 7:
+            layer[i]=layer[i]+4
+    return layer
+
+def good_pairs(data,i):
+  test=np.argwhere(data==i)
+  return test
+
+def check_sides(a,b):
+    if(a==(0|1|4|5)):
+        sidea=0
+    else:
+        sidea=1
+    if(b==(0|1|4|5)):
+        sideb=int(0)
+    else:
+        sideb=int(1)
+    if sideb == sidea:
+        return True
+    else:
+        return False
+
+def is_sidex(a):
+    if(a==0 or a==1 or a==4 or a==5):
+        return 0
+    else:
+        return 1
+
+
+def time_hist(data, i, side):
+    num_bins = 100
+    n, bins, patches = plt.hist(data, num_bins, facecolor='blue', alpha=0.5)
+    plt.savefig('C:\\Users\\demet\\Desktop\\Internship\\Hist\\Time_Hist'+str(i)+str(side)+'.png', format='png', dpi=300)
+
+
+def correction2D(triplet):
+    corr = np.array([1, 1])
+    position = pd.read_excel(filepath)
+    channel = position['Channel']
+    TOFPET = position['TOFPET']
+    corr[0] = position.loc[(channel == triplet[0]) & (TOFPET == (triplet[1] % 2))]['Bar']
+    corr[1] = triplet[2]
+    return corr
+
+dekaY = np.empty((8, 24))
+dekaX = np.empty((8, 24))
+timeX = np.empty((8, 24))
+timeY = np.empty((8, 24))
+min_=np.min([np.min(col) for col in df['value']])
+max_=np.max([np.max(col) for col in df['value']])
+for event_id in range(len(df)):
+    dekaY.fill(min_)
+    dekaX.fill(min_)
+    timeX.fill(0)
+    timeY.fill(0)
+    channels=df.iloc[event_id]['tofpet_channel']
+    tofpet_id = df.iloc[event_id]['tofpet_id']
+    layers = same_layer(channels,tofpet_id)# we have now the layers of each hits
+    hitsX = []
+    hitsY = []
+    hits = []
+    for hits in range(len(channels)):
+        if is_sidex(tofpet_id[hits]):
+            tmp=correction2D([channels[hits],tofpet_id[hits],layers[hits]])
+            dekaX[tmp[1]-1][tmp[0]-1] = df.iloc[event_id]['value'][hits]
+            timeX[tmp[1] - 1][tmp[0] - 1] = df.iloc[event_id]['timestamp'][hits]
+            hitsX.append(correction2D([channels[hits],tofpet_id[hits],layers[hits]]))
+        else:
+            tmp = correction2D([channels[hits], tofpet_id[hits], layers[hits]])
+            dekaY[tmp[1]-1][tmp[0]-1] = df.iloc[event_id]['value'][hits]
+            timeY[tmp[1] - 1][tmp[0] - 1] = df.iloc[event_id]['timestamp'][hits]
+            hitsY.append(correction2D([channels[hits],tofpet_id[hits],layers[hits]]))
+
+    plt.rcParams["figure.figsize"] = [100, 20]
+    plt.rcParams["figure.autolayout"] = True
+    f, ax = plt.subplots(2, 2)
+    f.tight_layout()
+    sideX = sns.heatmap(dekaX,vmin=min_,vmax=max_, mask=dekaX == min_, square=False, cmap='viridis',ax=ax[0, 0])
+    timex = sns.heatmap(timeX, vmin=0, vmax=4, mask=timeX == 0, square=False, cmap='viridis', ax=ax[1, 0], annot=True, fmt='g')
+
+    ax[0, 0].invert_yaxis()
+    ax[0, 0].set_aspect(1.375)
+    ax[0, 0].set_title("2-D Heat Map X-Side "+ "Timestamp "+str(df_events.iloc[event_id]['timestamp'])+" Relative Event "+str(event_id)+" Absolute Event " + str(df.iloc[event_id]['id']))
+
+    ax[1, 0].invert_yaxis()
+    ax[1, 0].set_aspect(1.375)
+    ax[1, 0].set_title("2-D Heat Map X-Side "+ "Timestamp HeatMap")
+
+    #plt.savefig('C:\\Users\\demet\\Desktop\\Internship\\SideX2\\SideX'+str(event_id)+'.png', format='png', dpi=300)
+    #plt.close("all")
+    sideY = sns.heatmap(dekaY,vmin=min_,vmax=max_, mask=dekaY == min_, square=False, cmap='viridis', ax=ax[0, 1])
+    timey = sns.heatmap(timeY, vmin=0, vmax=4, mask=timeY == 0, square=False, cmap='viridis', ax=ax[1, 1],annot=True, fmt='g')
+
+    ax[1, 1].invert_yaxis()
+    ax[1, 1].set_aspect(1.375)
+    ax[1, 1].set_title("2-D Heat Map X-Side "+ "Timestamp HeatMap")
+
+    ax[0, 1].set_title("2-D Heat Map Y-Side "+ "Timestamp "+str(df_events.iloc[event_id]['timestamp'])+" Relative Event "+str(event_id)+" Absolute Event " + str(df.iloc[event_id]['id']))
+    ax[0, 1].invert_yaxis()
+    ax[0, 1].set_aspect(1.375)
+    plt.savefig('C:\\Users\\demet\\Desktop\\Internship\\18\\SideX'+str(event_id)+'.png', format='png', dpi=300)
+    #time_hist(df.iloc[i]['timestamp'])
+    plt.close("all")

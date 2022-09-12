@@ -1,0 +1,194 @@
+## THIS SECTION INTRODUCES ALL THE MODULES THAT WOULD BE USED DURING THE EXECUTION OF THE SCRIPT ##
+
+import uproot
+import uproot3
+import numpy as np
+import pandas as pd # PANDAS IS EXTREMELY USEFUL AS IT IS RESPONSIBLE FOR DEALING WITH THE DATABASE FILES
+import sys
+from matplotlib import pyplot as plt # USED FOR THE PRODUCTION OF IMAGE PLOTS
+import mplhep as hep
+from itertools import combinations
+from matplotlib import pyplot as plt
+import mplhep as hep
+from vpython import * # USED FOR THE ANIMATION EVOLUTION OF THE SYSTEM
+from time import *
+import turtle
+from mpl_toolkits.mplot3d import Axes3D
+plt.style.use([hep.style.LHCb])
+
+## FUNCTIONS  same_layer function returns the layer at which a hit was detected. 
+
+filepath='/home/ecal/Documents/scripts/Analysis/ECAL_SiPM_mapping.xlsx'
+def same_layer(data,data2):
+    position=pd.read_excel(filepath)
+    channel=position['Channel']
+    TOFPET=position['TOFPET']
+    size=len(data)
+    data2_internal=data2%2
+    layer=np.zeros((size,),dtype=int)
+    for i in range(size):
+        layer[i]=position.loc[(channel== data[i]) & (TOFPET == data2_internal[i])]['Layer']
+        if data2[i] == 4 or data2[i] == 5 or data2[i] == 6 or data2[i] == 7:
+            layer[i]=layer[i]+4
+    return layer
+
+##Returns whether or not two hits are on the same side based on there tofpet_id
+def check_sides(a,b):
+    if(a==(0|1|4|5)):
+        sidea=0
+    else:
+        sidea=1
+    if(b==(0|1|4|5)):
+        sideb=int(0)
+    else:
+        sideb=int(1)
+    if sideb == sidea:
+        return True
+    else:
+        return False
+        
+ ## As the name of the function tells us it simply returns if the target side is side x or not
+ def is_sidex(a):
+    if(a==0 or a==1 or a==4 or a==5):
+        return 0
+    else:
+        return 1
+        
+ ## This function creates a grid on which we operate. It is used only for orientation purposes and could be omitted
+ def make_grid(xmax,dx):
+
+    for x in range(-xmax,xmax+dx,dx):
+        curve(pos=[vector(x,xmax,0),vector(x,-xmax,0)],color=color.white,radius=0.05)
+    for y in range(-xmax,xmax+dx,dx):
+        curve(pos=[vector(xmax,y,0),vector(-xmax,y,0)],color=color.white,radius=0.05)
+    for x in range(-xmax,xmax+dx,dx):
+        curve(pos=[vector(x,0,xmax),vector(x,0,-xmax)],color=color.white,radius=0.05)
+    for z in range(-xmax,xmax+dx,dx):
+        curve(pos=[vector(xmax,0,z),vector(-xmax,0,z)],color=color.white,radius=0.05)
+    for x in range(-xmax,xmax+dx,dx):
+        curve(pos=[vector(0,y,xmax),vector(0,y,-xmax)],color=color.white,radius=0.05)
+    for z in range(-xmax,xmax+dx,dx):
+        curve(pos=[vector(0,xmax,z),vector(0,-xmax,z)],color=color.white,radius=0.05)
+    arrow(pos=vector(24,0,0),length=5,axis=vector(1,0,0),color=color.blue)
+    arrow(pos=vector(0,24,0),length=5,axis=vector(0,1,0),color=color.blue)
+    arrow(pos=vector(0,0,24),length=5,axis=vector(0,0,1),color=color.blue)
+
+    text(text="X",
+         pos=vector(24,0,0),
+         height=3,
+         depth=0.1,
+         color=color.blue)
+    text(text="Y",
+         pos=vector(0,24,0),
+         height=3,
+         depth=0.1,
+         color=color.blue)
+    text(text="Z",
+         pos=vector(0,0,27),
+         height=3,
+         depth=0.1,
+         color=color.blue,
+         axis=vector(0,0,-1))
+    return
+    
+    
+    ## Visual_Presentation: It is the most important function and it is the one that essentially allows us to recreate our events in real time
+    
+    def Visual_Presentation(arr,event_id):
+    scene.width=2000
+    scene.height=900
+    scene.background = color.cyan
+    xside = box(pos=vector(12, 4, 0), color=color.red, length=24, width=0.5, height=8)
+    yside = box(pos=vector(0, 4, 12), color=color.red, length=0.5, width=24, height=8)
+    bottom = box(pos=vector(12, 0, 12), color=color.red, length=24, width=24, height=0.5)
+    text(text = "Side X",
+         pos = vector(12, 9, 0),
+         height = 3,
+         depth = 0.1,
+         color =color.yellow)
+    text(text = "Side Y",
+         pos = vector(0, 9, 24),
+         height = 3,
+         depth = 0.1,
+         color =color.yellow,
+         axis=vector(0,0,-1))
+    samples=100
+    tmp=menu(choices=float(df.iloc[event_id]['value'][0]), bind=M)
+    events_dictionary={}
+    for i in range(len(arr)):
+        events_dictionary["dectionx"+str(i)]=globals()[f"x{i}"]=box(pos=vector(arr[i][0],arr[i][2],arr[i][1]),length=1,width=1,height=1,color=color.white)
+        events_dictionary["dectiony"+str(i)]=globals()[f"y{i}"] = box(pos=vector(arr[i][1], arr[i][2], arr[i][1]), length=1, width=1, height=1, color=color.white)
+
+    temp = 0
+
+    while temp < samples:
+        rate(100)
+        if(running==1):
+         temp = temp + 1
+        pass
+    for i in range(len(arr)):
+        events_dictionary["dectionx" + str(i)].visible = False
+        events_dictionary["dectiony" + str(i)].visible = False
+        tmp.delete()
+     
+    ## The pairs that we created are created with respect to (tofpet_id, tofpet_channel). We have to do the mapping between the pair (tofpet_channel,tofpet_id) 
+    ## to (x,y,z) 
+    
+    def corres(triplet1,triplet2):
+    corr=np.array([1,1,1])
+    position=pd.read_excel(filepath)
+    channel=position['Channel']
+    TOFPET=position['TOFPET']
+    if is_sidex(triplet1[1]): # we use tofpet_id#
+         corr[0]=position.loc[(channel== triplet1[0]) & (TOFPET == (triplet1[1]%2))]['Bar']
+         corr[1]=position.loc[(channel== triplet2[0]) & (TOFPET == (triplet2[1]%2))]['Bar']
+    else:
+         corr[1]=position.loc[(channel== triplet1[0]) & (TOFPET == (triplet1[1]%2))]['Bar']
+         corr[0]=position.loc[(channel== triplet2[0]) & (TOFPET == (triplet2[1]%2))]['Bar']
+    if triplet1[2]!=triplet2[2]:
+        print("Errrot Spotted")
+    corr[2]=triplet1[2]
+    return corr
+
+    
+    ## Pause Functionality: enables the user to pause at certain events in case of she/he needs to better evaluate an event
+    def Run(b):
+    global running
+    if running==True:
+        b.text="Pause"
+        running=0
+    else:
+        b.text="Run"
+        running=1
+
+button(canvas=c1, text="Run", pos=scene.title_anchor, bind=Run)
+
+## Main iteration cycle:
+
+for event_id in range(len(df)):
+    channels=df.iloc[event_id]['tofpet_channel']
+    tofpet_id = df.iloc[event_id]['tofpet_id']
+    print(df.iloc[event_id]['value'])
+    layers = same_layer(channels,tofpet_id)# we have now the layers of each hits
+    hitsX = []
+    colorX = []
+    hitsY = []
+    colorY = []
+    hits = []
+    for hits in range(len(channels)):
+        if is_sidex(tofpet_id[hits]):
+            hitsX.append(correction2D([channels[hits],tofpet_id[hits],layers[hits]]))
+            colorX.append(df.iloc[event_id]['color'][hits])
+        else:
+            hitsY.append(correction2D([channels[hits],tofpet_id[hits],layers[hits]]))
+            colorY.append(df.iloc[event_id]['color'][hits])
+    Visual_Presentation(hitsX, hitsY, colorX, colorY)
+
+    
+    
+    
+    ######### ADITIONAL FUNCTIONS #########
+    
+    #We are going tp create a grade such that it would be easier for us to understand orientation
+    
+
