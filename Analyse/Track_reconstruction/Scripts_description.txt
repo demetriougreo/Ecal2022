@@ -1,0 +1,25 @@
+                #####           Scripts description:            #####
+
+The four scripts used for track reconstruction are (1) track_reconstruction.py, (2) projection_track_display.py,
+(3) track_display.py, (4) track_file_creation.py
+
+(1) track_reconstruction.py contains all the functions used to reconstruct a track. The main function is track, that
+take as an imput all the hits observed on ONE SIDE of the calorimeter during one event and determine the parameters of
+the straight line going through as many as possible hits. The parameters are x0 (or y0) the position of the muon when 
+z=9 (height of the calorimeter). Notice that x0 can be out of the bounds [0,24] as the muon can enter in the 
+calorimeter from one of the sides.  The parameters are determine using the a Hough transformation.
+    The function Mapping_2D is in charge of translating a doublet tofpet_id and channel into (XZ) or (YZ) coordinates
+    Chi2 function check that the track correctly fits the hits.
+
+(2) projection_track_display.py uses previous function to display the projection of a track on each side (XZ) and
+(YZ) of the calorimeter. It allows to visually control that the track are well reconstructed.
+
+(3) track_display.py is just the 3D display of the track. It doesn't have much more use than being nice.
+
+(4) track_file_creation.py save all the reconstructed tracks into a .csv file. tracks are saved in the following
+way: a track (associated to one specific event) have nine points, each of them described by 3 coordinates. The 
+track is thus saved as an array of length 27 [x1,y1,z1, ..., x9,y9,z9]. When extracted it might be a good idea
+to reshape the track in a more convenient way such as a 9 x 3 matrix: [[x1,y1,z1],... [x9,y9,z9]]. An other
+idea in order to reduce the size of the file would be to only save the 4 parameters obtained with track on both
+side of the calorimeter [x0,tx,y0,ty] and the event_id. This would divide by 5 the size of the .csv file.   
+   
