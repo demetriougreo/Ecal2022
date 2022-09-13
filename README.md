@@ -19,4 +19,7 @@ appears, when the projected elevation angles, are small, correspong to consecuti
 It is one of the intermidiary steps deployed during the illustration of the tracks and it is a heatmap, of the number of hits, per SiPM of each PCB. It can be used independantly 
 of the track reconstruction algorithm, and it is usually deployed, for hardware debugging, in order to detect mulfunctioning photomultipliers , or weak board connection spots. 
 
-##  ##
+## Track Reconstruction ##
+Track Reconstruction folder consists of numerous scripts and intermidiary data results, which are later used in time calibration folder. The primary tasks of this section of data analysis, is the reconstruction of the tracks, which is acheived using the 
+
+## Time Calibration ##
