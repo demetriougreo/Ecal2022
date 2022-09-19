@@ -24,14 +24,21 @@ side='X'
 delay=0
 
 
-## The merger function, could be ommited. It takes as arguments multiple rootfiles, which then extracts as pandas dataframes, only to merge them together into a super dataframe)
-df=rfa.merger(['/home/ecal/Documents/scripts/Analysis/Data/10h/data_0000.root', '/home/ecal/Documents/scripts/Analysis/Data/10h/data_0001.root', '/home/ecal/Documents/scripts/Analysis/Data/10h/data_0002.root', '/home/ecal/Documents/scripts/Analysis/Data/10h/data_0003.root', '/home/ecal/Documents/scripts/Analysis/Data/10h/data_0004.root', '/home/ecal/Documents/scripts/Analysis/Data/10h/data_0005.root', '/home/ecal/Documents/scripts/Analysis/Data/10h/data_0006.root', '/home/ecal/Documents/scripts/Analysis/Data/10h/data_0007.root', '/home/ecal/Documents/scripts/Analysis/Data/10h/data_0008.root' ])
+## The merger function, could be ommited. It takes as arguments multiple rootfiles, which then extracts as pandas dataframes, only to merge them together into 
+## a super dataframe)
+df=rfa.merger(['/home/ecal/Documents/scripts/Analysis/Data/10h/data_0000.root', '/home/ecal/Documents/scripts/Analysis/Data/10h/data_0001.root', 
+               '/home/ecal/Documents/scripts/Analysis/Data/10h/data_0002.root', '/home/ecal/Documents/scripts/Analysis/Data/10h/data_0003.root', 
+               '/home/ecal/Documents/scripts/Analysis/Data/10h/data_0004.root', '/home/ecal/Documents/scripts/Analysis/Data/10h/data_0005.root', 
+               '/home/ecal/Documents/scripts/Analysis/Data/10h/data_0006.root', '/home/ecal/Documents/scripts/Analysis/Data/10h/data_0007.root', 
+               '/home/ecal/Documents/scripts/Analysis/Data/10h/data_0008.root' ])
 tracks=pd.read_csv('/home/ecal/Documents/scripts/Analysis/Track_reconstruction/tracks.csv')## [indexx, indexy, truck-parameter, event_id]
 tracks_id=tracks['track_id']
 nb_tracks=len(tracks_id)
 
-## This section is used in order to define the distances travelled in the scintillator and vertically by a traversing muon. The quantities are already existent, and they are created in advance once the
-## tracks have been reconstructed. In this case we reconstruct a track and we find the distance travelled by the created photons along the scintillating path. To obtain the data, the function preparation is to be lunched 
+## This section is used in order to define the distances travelled in the scintillator and vertically by a traversing muon. The quantities are already existent, 
+## and they are created in advance once the
+## tracks have been reconstructed. In this case we reconstruct a track and we find the distance travelled by the created photons along the scintillating path.
+## To obtain the data, the function preparation is to be lunched 
 
 dsc_x_temp=pd.read_csv('/home/ecal/Documents/scripts/Analysis/Time_calibration/dsc_X.csv')
 dcal_x_temp=pd.read_csv('/home/ecal/Documents/scripts/Analysis/Time_calibration/dcal_X.csv')
