@@ -131,12 +131,19 @@ for i in range(2):
     # print("Now we pass to the while loops")
     t_entries=np.zeros(nb_tracks)
 
-    while len(to_exclude)<192:
+    while len(to_exclude)<192: ## we set this condtion, representing the delay of each side. The algorithm terminates once the delay of each SiPM has benn evaluated.
         electronic_delay_x,t_entries=ref_chosed([ch_ref,t_id_ref],to_exclude,delay,electronic_delay_x,t_entries)
-        to_exclude.extend([i for i in range(length) if (not(i in to_exclude) and electronic_delay_x[i]!=0)])## to exclude is not actually to exclude, it is rather simply a the SiPMs that have been activated taken into account this particular reference SiPM. 
-        channels_ref_cand,t_id_ref_cand=ftc.to_ch_t_id(to_exclude,already_used,'X')
+        to_exclude.extend([i for i in range(length) if (not(i in to_exclude) and electronic_delay_x[i]!=0)])## to exclude is not actually to exclude, it is rather 
+        ## simply a the SiPMs that have been activated taken into account this particular reference SiPM. 
+        channels_ref_cand,t_id_ref_cand=ftc.to_ch_t_id(to_exclude,already_used,'X') 
+        ## This function has a rather misleading functionality. It aims to go over the list of the SiPMs and check which SiPMs have not been used already as references. 
+        ## allowing the deployment of the following function which in fact determines the next reference channel. 
+        ## In order to determine the new reference points we use the candiates lists plus the previous ones 
         ch_ref,t_id_ref=ftc.find_new_ref(channels_ref_cand,t_id_ref_cand,[ch_ref,t_id_ref])
+        ## Next station, the marking of the used channel. 
         already_used.append(ttc.position_in_array(ch_ref,t_id_ref,'X'))
+        ## Now the dealy of the system is equal to the dealy of this particular SiPM. We carry this dealy residual to be added for the next cycle. S
+        ## SOS NOW WE FOUND THE LOGICAL ERROR. THE DELAY OF THE INITIAL REFERENCE CHANNEL WAS SET TO BE EQUAL TO ZERO. BUT IT MIGHT VERY WELL BE FAR FROM THE REAL ZERO. 
         delay=electronic_delay_x[ttc.position_in_array(ch_ref,t_id_ref,'X')]
         print('Still have to add '+str(192-len(to_exclude))+' SiPMs for side X')
 
