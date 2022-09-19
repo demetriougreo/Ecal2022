@@ -14,7 +14,13 @@ import Root_files_addition as rfa
 
 
 ## Look for the events where the reference channel is present
-def ref_chosed (ref,to_exclude,delay,elec_delay,t_entries):## ref corresponds to the reference SiPM properties. Its tofpet-channel and tofpet-id, to exclude corresponds to the Reference SiPM position in the array of SiPMS, Initially delay is set equal to zero, as this is the delay of the reference SiPM. Nonetheless, it is then modified based on the needd of the program, electronic_delay is in fact an array containing all the relative delays, once again t_entry is a bit misleading as it describes the value tstamp_ref-tscint_ref-tcal_ref
+
+## ref corresponds to the reference SiPM properties. Its tofpet-channel and tofpet-id, 
+    ##to exclude corresponds to the Reference SiPM position in the array of SiPMS, Initially delay is set equal to zero, as this is the delay of 
+    ##the reference SiPM. Nonetheless, it is then modified based on the needd of the program, electronic_delay is in fact an array containing all
+    ##the relative delays, once again t_entry is a bit misleading as it describes the value tstamp_ref-tscint_ref-tcal_ref
+    
+def ref_chosed (ref,to_exclude,delay,elec_delay,t_entries):
     ch_ref=ref[0] ## the reference channel to be isoalted
     t_id_ref=ref[1] ## tofpet id of the reference channel
     dt=[[] for i in range(length)]
