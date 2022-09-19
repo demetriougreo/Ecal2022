@@ -148,7 +148,7 @@ for i in range(2):
         print('Still have to add '+str(192-len(to_exclude))+' SiPMs for side X')
 
 
-    while len(to_exclude_y)<191:
+    while len(to_exclude_y)<191: ## SEE THE PREVIOUS LINES
         electronic_delay_y,t_entries=ref_chosed([ch_ref_y,t_id_ref_y],to_exclude_y,delay,electronic_delay_y,t_entries)
         to_exclude_y.extend([i for i in range(length) if (not(i in to_exclude_y) and electronic_delay_y[i]!=0)])
         channels_ref_cand,t_id_ref_cand=ftc.to_ch_t_id(to_exclude_y,already_used_y,'Y')
