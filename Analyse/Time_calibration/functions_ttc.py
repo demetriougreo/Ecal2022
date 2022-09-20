@@ -22,13 +22,18 @@ def suitable_track (ref,channels,tofpets,hits_other_side,t_stamp,track_param):
         if not( np.isnan(dsc_)):
             t_stamp_ref=t_stamp[np.argwhere([tofpets[i]==t_id and channels[i]==ch for i in range(len(channels))])][0][0]# we find the average timestamp of the ref_point
             dcal_=ttc.dcal(track_param,coor_ref,dsc_,side)## that corresponds to the dcal of the reference point
-            t_entry=t_stamp_ref-dsc_/csc-dcal_/c## so this is equal to t_entry of the reference point. Here the system gets a bit convoluted because this quantity would later be used for the relative delay calculation
+            t_entry=t_stamp_ref-dsc_/csc-dcal_/c## so this is equal to t_entry of the reference point. Here the system gets 
+            ## a bit convoluted because this quantity would later be used for the relative delay calculation
             return True , t_entry
     return False,0
 
 def find_new_ref(channels,t_id,previous_ref):
+    ## Step 1: Map the previous reference point into the geometry of the hardware
     coor_prev_ref=ttc.Mapping2D(previous_ref[1],previous_ref[0])
-    distances=[np.sqrt((coor_prev_ref[0]-ttc.Mapping2D(t_id[i],channels[i])[0])**2+(coor_prev_ref[1]-ttc.Mapping2D(t_id[i],channels[i])[1])**2) for i in range(len(channels))]## distance between the previous reference point and the actual reference point 
+    ## Step 2:: Find the distances between the previous refernce point and the potential reference points
+    distances=[np.sqrt((coor_prev_ref[0]-ttc.Mapping2D(t_id[i],channels[i])[0])**2+(coor_prev_ref[1]-ttc.Mapping2D(t_id[i],channels[i])[1])**2) for i in range(len(channels))]
+    ## This is a questionable choice, but I can see where it might come from. We take the potential reference point which is located the furthest possible from the 
+    ## existing reference point. The equation above by the way is wrong. Cn you spot the mistake :) ?? 
     index_max=distances.index(max(distances))
     return channels[index_max],t_id[index_max]
 
