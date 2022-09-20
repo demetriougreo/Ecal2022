@@ -25,7 +25,8 @@ def ref_chosed (ref,to_exclude,delay,elec_delay,t_entries):
     t_id_ref=ref[1] ## tofpet id of the reference channel
     dt=[[] for i in range(length)]
     for track_id in range(nb_tracks):
-        channels=df['tofpet_channel'].iloc[tracks_id[track_id]]## we use that because there is no perfect correspondance between the track id and the events as recorded by the tofpet
+        channels=df['tofpet_channel'].iloc[tracks_id[track_id]]## we use that because there is no perfect correspondance between the track id and the events
+                                                               ## as recorded by the tofpet
         tofpet=df['tofpet_id'].iloc[tracks_id[track_id]]## it is convoluted, a perver way to quantify it algorithmically
         t_stamp=df['timestamp'].iloc[tracks_id[track_id]]*6.25
 
@@ -49,12 +50,15 @@ def ref_chosed (ref,to_exclude,delay,elec_delay,t_entries):
                     index=index_x[ind]
                     dsc_=dsc_x[track_id][ind]
                     if not(np.isnan(dsc_)) and not(ttc.position_in_array(channels[index],tofpet[index],'X') in to_exclude): ## eliminate the case where there is no side correspondance
+                                                                                                                            ## eliminate the case of the reference point
                         if t_entries[track_id]==0:
                             t_entries[track_id]=t_entry
                         dcal_=dcal_x[track_id][ind]
                         chan=channels[index]
                         tof_id=tofpet[index]
                         t_ch=t_stamp[index]-delay
+## This part of the algorithm is correct. Delay is a variable in order to be able each time to reference back to the real delay of the reference point. Thus at the begining
+## is indeed zero, so negligeable but as we change reference point the intrinsic delay is modified. 
                         pos=ttc.position_in_array(chan,tof_id,'X')
                         t=t_entry+dsc_/csc+dcal_/c
                         dt[pos].append(t_ch-t)
@@ -73,9 +77,10 @@ def ref_chosed (ref,to_exclude,delay,elec_delay,t_entries):
                         t=t_entry+dsc_/csc+dcal_/c
                         dt[pos].append(t_ch-t)
                      
-    electronic_delay=[np.mean(dt[pos]) if (len(dt[pos])>50 and not(pos in to_exclude))  else elec_delay[pos]  for pos in range(length)]## we don't actually need the mean. We shall get the raw data and do ourselves the fitting
+   electronic_delay=[np.mean(dt[pos]) if (len(dt[pos])>50 and not(pos in to_exclude))  else elec_delay[pos]  for pos in range(length)]
+    ## we don't actually need the mean. We shall get the raw data and do ourselves the fitting
     #print(elec_delay,t_entries)
-    return electronic_delay,t_entries         
+    return electronic_delay,t_entries  ## SSOSS       
 
 
 need_prep=False
@@ -84,7 +89,15 @@ c=30 ## speed of light
 csc=17.526 ## speed of light in the fibre as cm/ns
 length=192
 
-df=rfa.merger(['/home/ecal/Documents/scripts/Analysis/Data/10h/data_0000.root', '/home/ecal/Documents/scripts/Analysis/Data/10h/data_0001.root', '/home/ecal/Documents/scripts/Analysis/Data/10h/data_0002.root', '/home/ecal/Documents/scripts/Analysis/Data/10h/data_0003.root', '/home/ecal/Documents/scripts/Analysis/Data/10h/data_0004.root', '/home/ecal/Documents/scripts/Analysis/Data/10h/data_0005.root', '/home/ecal/Documents/scripts/Analysis/Data/10h/data_0006.root', '/home/ecal/Documents/scripts/Analysis/Data/10h/data_0007.root', '/home/ecal/Documents/scripts/Analysis/Data/10h/data_0008.root' ])
+df=rfa.merger(['/home/ecal/Documents/scripts/Analysis/Data/10h/data_0000.root', 
+               '/home/ecal/Documents/scripts/Analysis/Data/10h/data_0001.root',
+               '/home/ecal/Documents/scripts/Analysis/Data/10h/data_0002.root',
+               '/home/ecal/Documents/scripts/Analysis/Data/10h/data_0003.root', 
+               '/home/ecal/Documents/scripts/Analysis/Data/10h/data_0004.root',
+               '/home/ecal/Documents/scripts/Analysis/Data/10h/data_0005.root', 
+               '/home/ecal/Documents/scripts/Analysis/Data/10h/data_0006.root',
+               '/home/ecal/Documents/scripts/Analysis/Data/10h/data_0007.root',
+               '/home/ecal/Documents/scripts/Analysis/Data/10h/data_0008.root' ])
 tracks=pd.read_csv('/home/ecal/Documents/scripts/Analysis/Track_reconstruction/tracks.csv')## [indexx, indexy, truck-parameter, event_id]
 tracks_id=tracks['track_id'] ## The id number of a track, not the id of the event corresponding to the track, they are not the same
 nb_tracks=len(tracks_id)
@@ -247,8 +260,9 @@ for i in range(2):
                 t_ch=t_stamp[index]
                 pos=ttc.position_in_array(chan,tof_id,'X')
                 delay=electronic_delay_x[pos]
-
-                det_time_x[pos].append(t_ch-dsc_/csc-dcal_/c-t_entry-delay)
+                   ## SOS That line was erroneous. WE SHALL ALWAYS BEAR IN MIND THE FACT THAT WE ARE AFTER THE RESIDUALS. THIS ONE RIGHT HERE WAS WRONG AS 
+                   ## IT WAS RETURNING THE 
+                det_time_x[pos].append(t_ch-dsc_/csc-dcal_/c-delay)
 
         for ind in range(len(index_y)):
             index=index_y[ind]
