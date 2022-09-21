@@ -1,0 +1,4 @@
+In this file you find the link for the DataSet which can be used for an example of the program. Using this dataset, somebody could run directly the time calibration
+algorithm, even if there are certain issues with it. In general this dataset is used for track construction and projection as well. To manage to proejct the tracks, 
+track reconstfruction has to take place. This is acheived with the track-file construction. At any given moment the Analysis folder contains a perfectly ready set of
+data, to be deployed. 
