@@ -1,6 +1,6 @@
 # Ecal2022
 The Folder Analyse contains all scripts develloped during the Summer project. It contains 5 different folders, each dedicated to each individual task. Regarding he steps 
-once has to follow in order to navigate her/himself in the folders it could check the actual documentation report, as well as the Tutorial Video. 
+once has to follow in order to navigate her/himself in the folders it could check the actual documentation report, as well as the Tutorial Videos. ALL TUTORIAL VIDEOS CAN BE FOUND IN THE DROPBOX LINK https://www.dropbox.com/scl/fo/zibashvvy0nbgikb5e1l5/h?dl=0&rlkey=mnkh42qw97nri6yjqlfdntc82
 
 ## Amplitude Calibration ##
 Amplitude Calibration contains all relative scripts and data, with regard to the charge integration of the Tofpets. Each tofpet, consists of 3 integration sub-circuits,
