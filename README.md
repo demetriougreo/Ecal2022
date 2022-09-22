@@ -15,6 +15,8 @@ for a symmetrical distribution). In the current form of the algorithm, it reprod
 in the track reconstruction algorithm, that influence the behaviour of the results, and make them deviate in certain regions from the Metropolis-Hastings results.The problem 
 appears, when the projected elevation angles, are small, correspong to consecutive SiPMs of the same Layer to be activated. 
 
+*METROPOLIS HASTINGS ALGORITHM* https://www.youtube.com/watch?v=0lpT-yveuIA&ab_channel=MachineLearningTV
+
 ## Print PCB ##
 It is one of the intermidiary steps deployed during the illustration of the tracks and it is a heatmap, of the number of hits, per SiPM of each PCB. It can be used independantly 
 of the track reconstruction algorithm, and it is usually deployed, for hardware debugging, in order to detect mulfunctioning photomultipliers , or weak board connection spots. 
